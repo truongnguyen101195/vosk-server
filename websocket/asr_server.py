@@ -68,11 +68,11 @@ async def recognize(websocket, path):
         if isinstance(message, bytes):
             audio_data += message
 
-    print("đến đây r")
+    logging.info("đến đây r")
 
     lid_result = langid.classify(audio_data)
     detected_lang = lid_result[0]
-    print(f"detect language: {detected_lang}")
+    logging.info(f"detect language: {detected_lang}")
 
     if detected_lang == 'vi':
         print("language: vi")
@@ -101,13 +101,13 @@ def send_to_llm(session_id, user_id, result):
     try:
         result_json = json.loads(result)
         prompt_text = result_json.get('text', '')
-        print(f" send result to server: {prompt_text}")
+        logging.info(f" send result to server: {prompt_text}")
         payload = {'prompt': prompt_text}
 
         url = f'{args.llm_host}/v1/webrtc/{session_id}/{user_id}'
         response = requests.post(url, json=payload)
         response.raise_for_status()
-        print(f"Successfully sent result to server: {response.text}")
+        logging.info(f"Successfully sent result to server: {response.text}")
     except requests.exceptions.RequestException as e:
         print(f"Error sending result to server: {e}")
 
