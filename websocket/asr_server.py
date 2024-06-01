@@ -67,37 +67,34 @@ async def recognize(websocket, path):
         # Accumulate audio data
         if isinstance(message, bytes):
             audio_data += message
-        print("đến đây r")
 
-        lid_result = langid.classify(audio_data)
-        detected_lang = lid_result[0]
-        print(f"detect language: {detected_lang}")
+    print("đến đây r")
 
-        if detected_lang == 'vi':
-            print("language: vi")
+    lid_result = langid.classify(audio_data)
+    detected_lang = lid_result[0]
+    print(f"detect language: {detected_lang}")
 
-            current_model = vi_model
-        else:
-            print("language: us")
+    if detected_lang == 'vi':
+        print("language: vi")
 
-            current_model = en_model
+        current_model = vi_model
+    else:
+        print("language: us")
 
-        # Create the recognizer, word list is temporary disabled since not every model supports it
+        current_model = en_model
 
-        if not rec or model_changed:
-            model_changed = False
-            rec = KaldiRecognizer(current_model, sample_rate)
-            rec.SetWords(show_words)
-            rec.SetMaxAlternatives(max_alternatives)
-            rec.SetSpkModel(spk_model)
+    # Create the recognizer, word list is temporary disabled since not every model supports it
 
-        response, stop = await loop.run_in_executor(pool, process_chunk, rec, message)
-        await websocket.send(response)
-        if stop:
-            send_to_llm(session_id, user_id, response)
-            await websocket.close()
-            break
+    rec = KaldiRecognizer(current_model, sample_rate)
+    rec.SetWords(show_words)
+    rec.SetMaxAlternatives(max_alternatives)
+    rec.SetSpkModel(spk_model)
 
+    response, stop = await loop.run_in_executor(pool, process_chunk, rec, message)
+    await websocket.send(response)
+    if stop:
+        send_to_llm(session_id, user_id, response)
+        await websocket.close()
 
 def send_to_llm(session_id, user_id, result):
     global args
