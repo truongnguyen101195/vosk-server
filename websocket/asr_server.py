@@ -102,6 +102,8 @@ async def recognize(websocket, path):
 def send_to_llm(session_id, user_id, result):
     global args
     try:
+        print(f" send result to server: {result}")
+
         url = f'{args.llm_host}/v1/webrtc/{session_id}/{user_id}'
         response = requests.post(args, json=json.loads(result))
         response.raise_for_status()
