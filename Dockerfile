@@ -26,7 +26,7 @@ RUN wget -O /opt/vosk-model-vi.zip https://alphacephei.com/vosk/models/vosk-mode
     mv /opt/vosk-model-small-vi-0.22 /opt/vosk-model-vi
 
 # Copy the server script
-COPY asr_server.py /opt/vosk-server/websocket/asr_server.py
+COPY websocket/asr_server.py /opt/vosk-server/websocket/asr_server.py
 
 # Install Python dependencies
 RUN pip install websockets vosk requests
