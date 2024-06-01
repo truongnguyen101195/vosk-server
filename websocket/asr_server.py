@@ -9,8 +9,8 @@ import requests
 import websockets
 import concurrent.futures
 import logging
-import langid
 from vosk import Model, SpkModel, KaldiRecognizer
+
 
 def process_chunk(rec, message):
     rec.AcceptWaveform(message)
@@ -20,6 +20,28 @@ def process_chunk(rec, message):
     else:
         stop = False
     return result, stop
+
+
+def detect_language(audio_data):
+    # Initialize recognizers for both languages
+    rec_en = KaldiRecognizer(en_model, args.sample_rate)
+    rec_vi = KaldiRecognizer(vi_model, args.sample_rate)
+
+    # Use a short sample for language detection
+    sample_size = min(8000, len(audio_data))  # Use the first 0.5 seconds (8000 samples at 16000 Hz)
+    sample_data = audio_data[:sample_size]
+
+    rec_en.AcceptWaveform(sample_data)
+    rec_vi.AcceptWaveform(sample_data)
+
+    result_en = json.loads(rec_en.Result())
+    result_vi = json.loads(rec_vi.Result())
+
+    if result_en['confidence'] > result_vi['confidence']:
+        return 'en'
+    else:
+        return 'vi'
+
 
 async def recognize(websocket, path):
     global model
@@ -70,20 +92,14 @@ async def recognize(websocket, path):
         if isinstance(message, bytes):
             audio_data += message
 
-
     logging.info("đến đây r")
 
-    lid_result = langid.classify(audio_data)
-    detected_lang = lid_result[0]
-    logging.info(f"detect language: {detected_lang}")
+    # Detect language using a short initial sample
+    detected_lang = detect_language(audio_data)
 
     if detected_lang == 'vi':
-        print("language: vi")
-
         current_model = vi_model
     else:
-        print("language: us")
-
         current_model = en_model
 
     # Create the recognizer, word list is temporary disabled since not every model supports it
@@ -98,6 +114,7 @@ async def recognize(websocket, path):
     if stop:
         send_to_llm(session_id, user_id, response)
         await websocket.close()
+
 
 def send_to_llm(session_id, user_id, result):
     global args
@@ -116,7 +133,6 @@ def send_to_llm(session_id, user_id, result):
 
 
 async def start():
-
     global vi_model
     global en_model
     global spk_model
@@ -143,7 +159,7 @@ async def start():
     args.llm_host = bool(os.environ.get('LLM_HOST', True))
 
     if len(sys.argv) > 1:
-       args.model_path = sys.argv[1]
+        args.model_path = sys.argv[1]
 
     # Gpu part, uncomment if vosk-api has gpu support
     #

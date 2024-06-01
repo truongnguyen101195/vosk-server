@@ -42,7 +42,7 @@ RUN wget -O /opt/vosk-model-spk.zip https://alphacephei.com/vosk/models/vosk-mod
 COPY websocket/asr_server.py /opt/vosk-server/websocket/asr_server.py
 
 # Install Python dependencies
-RUN pip install websockets vosk requests langid
+RUN pip install websockets vosk requests
 
 # Expose the port
 EXPOSE 2700
