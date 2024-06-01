@@ -12,14 +12,13 @@ import logging
 from vosk import Model, SpkModel, KaldiRecognizer
 
 def process_chunk(rec, message):
-    if message == '{"eof" : 1}':
-        return rec.FinalResult(), True
-    if message == '{"reset" : 1}':
-        return rec.FinalResult(), False
-    elif rec.AcceptWaveform(message):
-        return rec.Result(), False
+    rec.AcceptWaveform(message)
+    result = rec.Result()
+    if rec.FinalResult():
+        stop = True
     else:
-        return rec.PartialResult(), False
+        stop = False
+    return result, stop
 
 async def recognize(websocket, path):
     global model
@@ -41,6 +40,12 @@ async def recognize(websocket, path):
     while True:
 
         message = await websocket.recv()
+
+        # Handle the end of stream signal
+        if isinstance(message, str) and 'end' in message:
+            await websocket.close()
+            break
+
 
         # Load configuration if provided
         if isinstance(message, str) and 'config' in message:
@@ -125,7 +130,7 @@ async def start():
     #     GpuInstantiate()
     # pool = concurrent.futures.ThreadPoolExecutor(initializer=thread_init)
 
-    spk_model = SpkModel(args.spk_model_path) if args.spk_model_path else None
+    spk_model = SpkModel(args.spk_model_path)
 
     pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
 
