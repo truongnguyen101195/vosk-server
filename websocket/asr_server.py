@@ -77,12 +77,15 @@ async def recognize(websocket, path):
         detected_lang = lid_result[0]
 
         if detected_lang == 'vi':
+            print("language: vi")
+
             current_model = vi_model
         else:
+            print("language: us")
+
             current_model = en_model
 
         # Create the recognizer, word list is temporary disabled since not every model supports it
-        logging.info("Message %s", message)
 
         if not rec or model_changed:
             model_changed = False
@@ -102,10 +105,13 @@ async def recognize(websocket, path):
 def send_to_llm(session_id, user_id, result):
     global args
     try:
-        print(f" send result to server: {result}")
+        result_json = json.loads(result)
+        prompt_text = result_json.get('text', '')
+        print(f" send result to server: {prompt_text}")
+        payload = {'prompt': prompt_text}
 
         url = f'{args.llm_host}/v1/webrtc/{session_id}/{user_id}'
-        response = requests.post(args, json=json.loads(result))
+        response = requests.post(url, json=payload)
         response.raise_for_status()
         print(f"Successfully sent result to server: {response.text}")
     except requests.exceptions.RequestException as e:
