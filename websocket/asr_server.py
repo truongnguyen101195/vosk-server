@@ -65,7 +65,7 @@ async def recognize(websocket, path):
             if 'session_id' in jobj:
                 session_id = jobj['session_id']
             if 'user_id' in jobj:
-                user_id = float(jobj['user_id'])
+                user_id = jobj['user_id']
             continue
 
         # Create the recognizer, word list is temporary disabled since not every model supports it

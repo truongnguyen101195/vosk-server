@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vosk WebSocket Speech Recognition</title>
+</head>
+<body>
+    <h1>Vosk WebSocket Speech Recognition</h1>
+    <button id="startButton">Start Recording</button>
+    <button id="stopButton" disabled>Stop Recording</button>
+    <p id="transcription"></p>
+    <script>
+        let ws;
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        document.getElementById('startButton').onclick = () => {
+            if (isRecording) return;
+            isRecording = true;
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start();
+
+                ws = new WebSocket('ws://webrtc.igot.app');
+                ws.onopen = () => {
+                    const session = {
+                        session: {
+                            session_id: 'gvjagdfjasfmthrfhmjadgj',
+                            user_id: 'jvbasdhjvasdhjasdhjasdhjdsa',
+                        }
+                    };
+                    ws.send(JSON.stringify(session));
+                };
+
+                ws.onmessage = (event) => {
+                    const result = JSON.parse(event.data);
+                    if (result.text) {
+                        document.getElementById('transcription').innerText += result.text + ' ';
+                    }
+                };
+
+                ws.onclose = () => {
+                    console.log('WebSocket connection closed');
+                };
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                    if (mediaRecorder.state === 'inactive') {
+                        let blob = new Blob(audioChunks, { type: 'audio/wav' });
+                        blob.arrayBuffer().then(buffer => {
+                            ws.send(buffer);
+                            ws.send(JSON.stringify({ "end": true })); // Signal end of stream
+                        });
+                    }
+                };
+
+                document.getElementById('startButton').disabled = true;
+                document.getElementById('stopButton').disabled = false;
+            });
+        };
+
+        document.getElementById('stopButton').onclick = () => {
+            if (!isRecording) return;
+            isRecording = false;
+            mediaRecorder.stop();
+            document.getElementById('startButton').disabled = false;
+            document.getElementById('stopButton').disabled = true;
+        };
+    </script>
+</body>
+</html>
