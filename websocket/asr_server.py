@@ -42,11 +42,6 @@ async def recognize(websocket, path):
 
         message = await websocket.recv()
 
-        # Handle the end of stream signal
-        if isinstance(message, str) and 'end' in message:
-            await websocket.close()
-            break
-
 
         # Load configuration if provided
         if isinstance(message, str) and 'config' in message:
