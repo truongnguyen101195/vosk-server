@@ -21,9 +21,9 @@ RUN wget -O /opt/vosk-model-en.zip https://alphacephei.com/vosk/models/vosk-mode
     mv /opt/vosk-model-small-en-us-0.15 /opt/vosk-model-en
 
 # Download and extract the Vietnamese model
-RUN wget -O /opt/vosk-model-vi.zip https://alphacephei.com/vosk/models/vosk-model-small-vi-0.22.zip && \
+RUN wget -O /opt/vosk-model-vi.zip https://alphacephei.com/vosk/models/vosk-model-small-vn-0.4.zip && \
     unzip /opt/vosk-model-vi.zip -d /opt && \
-    mv /opt/vosk-model-small-vi-0.22 /opt/vosk-model-vi
+    mv /opt/vosk-model-small-vn-0.4 /opt/vosk-model-vi
 
 # Copy the server script
 COPY websocket/asr_server.py /opt/vosk-server/websocket/asr_server.py
