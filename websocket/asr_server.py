@@ -9,6 +9,7 @@ import requests
 import websockets
 import concurrent.futures
 import logging
+import langid
 from vosk import Model, SpkModel, KaldiRecognizer
 
 def process_chunk(rec, message):
@@ -36,7 +37,7 @@ async def recognize(websocket, path):
     user_id = ''
 
     logging.info('Connection from %s', websocket.remote_address);
-
+    audio_data = b''
     while True:
 
         message = await websocket.recv()
@@ -68,10 +69,24 @@ async def recognize(websocket, path):
                 user_id = jobj['user_id']
             continue
 
+        # Accumulate audio data
+        if isinstance(message, bytes):
+            audio_data += message
+
+        lid_result = langid.classify(audio_data)
+        detected_lang = lid_result[0]
+
+        if detected_lang == 'vi':
+            current_model = vi_model
+        else:
+            current_model = en_model
+
         # Create the recognizer, word list is temporary disabled since not every model supports it
+        logging.info("Message %s", message)
+
         if not rec or model_changed:
             model_changed = False
-            rec = KaldiRecognizer(spk_model, sample_rate)
+            rec = KaldiRecognizer(current_model, sample_rate)
             rec.SetWords(show_words)
             rec.SetMaxAlternatives(max_alternatives)
             rec.SetSpkModel(spk_model)
@@ -97,7 +112,8 @@ def send_to_llm(session_id, user_id, result):
 
 async def start():
 
-    global model
+    global vi_model
+    global en_model
     global spk_model
     global args
     global pool
@@ -113,6 +129,8 @@ async def start():
 
     args.interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
     args.port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
+    args.en_model_path = os.environ.get('VOSK_EN_MODEL_PATH', '/opt/vosk-model-en')
+    args.vi_model_path = os.environ.get('VOSK_VI_MODEL_PATH', '/opt/vosk-model-vi')
     args.spk_model_path = os.environ.get('VOSK_SPK_MODEL_PATH')
     args.sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
     args.max_alternatives = int(os.environ.get('VOSK_ALTERNATIVES', 0))
@@ -129,6 +147,8 @@ async def start():
     # def thread_init():
     #     GpuInstantiate()
     # pool = concurrent.futures.ThreadPoolExecutor(initializer=thread_init)
+    en_model = Model(args.en_model_path)
+    vi_model = Model(args.vi_model_path)
 
     spk_model = SpkModel(args.spk_model_path)
 

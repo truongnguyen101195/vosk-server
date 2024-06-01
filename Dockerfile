@@ -6,6 +6,8 @@ ENV VOSK_SERVER_INTERFACE=0.0.0.0
 ENV VOSK_SERVER_PORT=2700
 ENV VOSK_MODEL_PATH=/opt/vosk-model
 ENV VOSK_SPK_MODEL_PATH=/opt/vosk-model-spk
+ENV VOSK_EN_MODEL_PATH=/opt/vosk-model-en
+ENV VOSK_VI_MODEL_PATH=/opt/vosk-model-vi
 ENV VOSK_SAMPLE_RATE=8000
 ENV VOSK_ALTERNATIVES=0
 ENV VOSK_SHOW_WORDS=true
@@ -18,6 +20,18 @@ RUN apt-get update && apt-get install -y \
 
 RUN mkdir -p /opt/vosk-model
 
+# Download and extract the English language model
+RUN wget -O /opt/vosk-model-en.zip https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip && \
+    unzip /opt/vosk-model-en.zip -d /opt/vosk-model-en && \
+    mv /opt/vosk-model-en/vosk-model-small-en-us-0.15/* /opt/vosk-model-en/ && \
+    rmdir /opt/vosk-model-en/vosk-model-small-en-us-0.15
+
+# Download and extract the Vietnamese language model
+RUN wget -O /opt/vosk-model-vi.zip https://alphacephei.com/vosk/models/vosk-model-small-vi-0.4.zip && \
+    unzip /opt/vosk-model-vi.zip -d /opt/vosk-model-vi && \
+    mv /opt/vosk-model-vi/vosk-model-small-vi-0.4/* /opt/vosk-model-vi/ && \
+    rmdir /opt/vosk-model-vi/vosk-model-small-vi-0.4
+
 # Download and extract the Speaker model
 RUN wget -O /opt/vosk-model-spk.zip https://alphacephei.com/vosk/models/vosk-model-spk-0.4.zip && \
     unzip /opt/vosk-model-spk.zip -d /opt/vosk-model-spk && \
@@ -28,7 +42,7 @@ RUN wget -O /opt/vosk-model-spk.zip https://alphacephei.com/vosk/models/vosk-mod
 COPY websocket/asr_server.py /opt/vosk-server/websocket/asr_server.py
 
 # Install Python dependencies
-RUN pip install websockets vosk requests
+RUN pip install websockets vosk requests langid
 
 # Expose the port
 EXPOSE 2700
