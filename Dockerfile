@@ -22,6 +22,7 @@ RUN mkdir -p /opt/vosk-model
 RUN wget -O /opt/vosk-model-spk.zip https://alphacephei.com/vosk/models/vosk-model-spk-0.4.zip && \
     unzip /opt/vosk-model-spk.zip -d /opt/vosk-model-spk
 
+COPY mfcc.conf /opt/vosk-model-spk/
 # Copy the server script
 COPY websocket/asr_server.py /opt/vosk-server/websocket/asr_server.py
 
