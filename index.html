@@ -49,6 +49,8 @@
                         let blob = new Blob(audioChunks, { type: 'audio/wav' });
                         blob.arrayBuffer().then(buffer => {
                             ws.send(buffer);
+                            ws.send(JSON.stringify({ "end": true })); // Signal end of stream
+
                         });
                     }
                 };

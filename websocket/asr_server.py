@@ -42,6 +42,8 @@ async def recognize(websocket, path):
 
         message = await websocket.recv()
 
+        if isinstance(message, str) and 'end' in message:
+            break
 
         # Load configuration if provided
         if isinstance(message, str) and 'config' in message:
@@ -67,6 +69,7 @@ async def recognize(websocket, path):
         # Accumulate audio data
         if isinstance(message, bytes):
             audio_data += message
+
 
     logging.info("đến đây r")
 
