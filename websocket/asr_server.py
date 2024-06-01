@@ -125,7 +125,6 @@ async def start():
     #     GpuInstantiate()
     # pool = concurrent.futures.ThreadPoolExecutor(initializer=thread_init)
 
-    model = Model(args.model_path)
     spk_model = SpkModel(args.spk_model_path) if args.spk_model_path else None
 
     pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
