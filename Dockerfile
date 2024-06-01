@@ -13,12 +13,14 @@ ENV VOSK_SHOW_WORDS=true
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     wget \
-    unzip
+    unzip \
+    ca-certificates
+
+RUN mkdir -p /opt/vosk-model
 
 # Download and extract the Speaker model
 RUN wget -O /opt/vosk-model-spk.zip https://alphacephei.com/vosk/models/vosk-model-spk-0.4.zip && \
-    unzip /opt/vosk-model-spk.zip -d /opt/vosk-model-spk && \
-    mv /opt/vosk-model-spk/vosk-model-spk-0.4 /opt/vosk-model-spk
+    unzip /opt/vosk-model-spk.zip -d /opt/vosk-model-spk
 
 # Copy the server script
 COPY websocket/asr_server.py /opt/vosk-server/websocket/asr_server.py
