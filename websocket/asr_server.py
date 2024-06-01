@@ -46,13 +46,8 @@ async def recognize(websocket, path):
         if isinstance(message, str) and 'config' in message:
             jobj = json.loads(message)['config']
             logging.info("Config %s", jobj)
-            if 'phrase_list' in jobj:
-                phrase_list = jobj['phrase_list']
             if 'sample_rate' in jobj:
                 sample_rate = float(jobj['sample_rate'])
-            if 'model' in jobj:
-                model = Model(jobj['model'])
-                model_changed = True
             if 'words' in jobj:
                 show_words = bool(jobj['words'])
             if 'max_alternatives' in jobj:
@@ -71,14 +66,10 @@ async def recognize(websocket, path):
         # Create the recognizer, word list is temporary disabled since not every model supports it
         if not rec or model_changed:
             model_changed = False
-            if phrase_list:
-                rec = KaldiRecognizer(model, sample_rate, json.dumps(phrase_list, ensure_ascii=False))
-            else:
-                rec = KaldiRecognizer(model, sample_rate)
+            rec = KaldiRecognizer(spk_model, sample_rate)
             rec.SetWords(show_words)
             rec.SetMaxAlternatives(max_alternatives)
-            if spk_model:
-                rec.SetSpkModel(spk_model)
+            rec.SetSpkModel(spk_model)
 
         response, stop = await loop.run_in_executor(pool, process_chunk, rec, message)
         await websocket.send(response)
@@ -117,7 +108,6 @@ async def start():
 
     args.interface = os.environ.get('VOSK_SERVER_INTERFACE', '0.0.0.0')
     args.port = int(os.environ.get('VOSK_SERVER_PORT', 2700))
-    args.model_path = os.environ.get('VOSK_MODEL_PATH', 'model')
     args.spk_model_path = os.environ.get('VOSK_SPK_MODEL_PATH')
     args.sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
     args.max_alternatives = int(os.environ.get('VOSK_ALTERNATIVES', 0))

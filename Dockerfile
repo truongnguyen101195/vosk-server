@@ -15,15 +15,10 @@ RUN apt-get update && apt-get install -y \
     wget \
     unzip
 
-# Download and extract the English model
-RUN wget -O /opt/vosk-model-en.zip https://alphacephei.com/vosk/models/vosk-model-small-en-us-0.15.zip && \
-    unzip /opt/vosk-model-en.zip -d /opt && \
-    mv /opt/vosk-model-small-en-us-0.15 /opt/vosk-model-en
-
-# Download and extract the Vietnamese model
-RUN wget -O /opt/vosk-model-vi.zip https://alphacephei.com/vosk/models/vosk-model-small-vn-0.4.zip && \
-    unzip /opt/vosk-model-vi.zip -d /opt && \
-    mv /opt/vosk-model-small-vn-0.4 /opt/vosk-model-vi
+# Download and extract the Speaker model
+RUN wget -O /opt/vosk-model-spk.zip https://alphacephei.com/vosk/models/vosk-model-spk-0.4.zip && \
+    unzip /opt/vosk-model-spk.zip -d /opt/vosk-model-spk && \
+    mv /opt/vosk-model-spk/vosk-model-spk-0.4 /opt/vosk-model-spk
 
 # Copy the server script
 COPY websocket/asr_server.py /opt/vosk-server/websocket/asr_server.py
