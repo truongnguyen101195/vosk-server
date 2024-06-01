@@ -29,7 +29,7 @@ RUN wget -O /opt/vosk-model-en.zip https://alphacephei.com/vosk/models/vosk-mode
 # Download and extract the Vietnamese model
 RUN wget -O /opt/vosk-model/vosk-model-small-vn-0.4.zip https://alphacephei.com/vosk/models/vosk-model-small-vn-0.4.zip && \
     unzip /opt/vosk-model/vosk-model-small-vn-0.4.zip -d /opt/vosk-model-vi && \
-    mv /opt/vosk-model-vi/vosk-model-small-vn-0.4/* /opt/vosk-model/vi && \
+    mv /opt/vosk-model-vi/vosk-model-small-vn-0.4/* /opt/vosk-model-vi && \
     rmdir /opt/vosk-model-vi/vosk-model-small-vn-0.4
 
 # Download and extract the Speaker model
