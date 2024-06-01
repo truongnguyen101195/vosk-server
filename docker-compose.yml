@@ -9,7 +9,7 @@ services:
       VOSK_SERVER_INTERFACE: "0.0.0.0"
       VOSK_SERVER_PORT: 2700
       VOSK_SPK_MODEL_PATH: "/opt/vosk-model-spk"
-      VOSK_SAMPLE_RATE: 8000
+      VOSK_SAMPLE_RATE: 16000
       VOSK_ALTERNATIVES: 0
       VOSK_SHOW_WORDS: "true"
       LLM_HOST: https://x.igot.app
