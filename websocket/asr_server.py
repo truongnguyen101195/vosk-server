@@ -4,7 +4,8 @@ import json
 import os
 import sys
 import asyncio
-import pathlib
+
+import requests
 import websockets
 import concurrent.futures
 import logging
@@ -32,6 +33,8 @@ async def recognize(websocket, path):
     sample_rate = args.sample_rate
     show_words = args.show_words
     max_alternatives = args.max_alternatives
+    session_id = ''
+    user_id = ''
 
     logging.info('Connection from %s', websocket.remote_address);
 
@@ -56,6 +59,15 @@ async def recognize(websocket, path):
                 max_alternatives = int(jobj['max_alternatives'])
             continue
 
+        if isinstance(message, str) and 'session' in message:
+            jobj = json.loads(message)['session']
+            logging.info("Session %s", jobj)
+            if 'session_id' in jobj:
+                session_id = jobj['session_id']
+            if 'user_id' in jobj:
+                user_id = float(jobj['user_id'])
+            continue
+
         # Create the recognizer, word list is temporary disabled since not every model supports it
         if not rec or model_changed:
             model_changed = False
@@ -70,8 +82,21 @@ async def recognize(websocket, path):
 
         response, stop = await loop.run_in_executor(pool, process_chunk, rec, message)
         await websocket.send(response)
-        if stop: break
+        if stop:
+            send_to_llm(session_id, user_id, response)
+            await websocket.close()
+            break
 
+
+def send_to_llm(session_id, user_id, result):
+    global args
+    try:
+        url = f'{args.llm_host}/v1/webrtc/{session_id}/{user_id}'
+        response = requests.post(args, json=json.loads(result))
+        response.raise_for_status()
+        print(f"Successfully sent result to server: {response.text}")
+    except requests.exceptions.RequestException as e:
+        print(f"Error sending result to server: {e}")
 
 
 async def start():
@@ -97,6 +122,7 @@ async def start():
     args.sample_rate = float(os.environ.get('VOSK_SAMPLE_RATE', 8000))
     args.max_alternatives = int(os.environ.get('VOSK_ALTERNATIVES', 0))
     args.show_words = bool(os.environ.get('VOSK_SHOW_WORDS', True))
+    args.llm_host = bool(os.environ.get('LLM_HOST', True))
 
     if len(sys.argv) > 1:
        args.model_path = sys.argv[1]
