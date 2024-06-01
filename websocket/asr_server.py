@@ -72,9 +72,11 @@ async def recognize(websocket, path):
         # Accumulate audio data
         if isinstance(message, bytes):
             audio_data += message
+        print("đến đây r")
 
         lid_result = langid.classify(audio_data)
         detected_lang = lid_result[0]
+        print(f"detect language: {detected_lang}")
 
         if detected_lang == 'vi':
             print("language: vi")
