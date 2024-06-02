@@ -61,7 +61,8 @@ def detect_language(audio_data):
 
 
 async def recognize(websocket, path):
-    global model
+    global vi_model
+    global en_model
     global spk_model
     global args
     global pool
@@ -112,16 +113,16 @@ async def recognize(websocket, path):
     logging.info("đến đây r")
 
     # Detect language using a short initial sample
-    # detected_lang = detect_language(audio_data)
-    #
-    # if detected_lang == 'vi':
-    #     current_model = vi_model
-    # else:
-    #     current_model = en_model
+    detected_lang = detect_language(audio_data)
+
+    if detected_lang == 'vi':
+        current_model = vi_model
+    else:
+        current_model = en_model
 
     # Create the recognizer, word list is temporary disabled since not every model supports it
 
-    rec = KaldiRecognizer(model, sample_rate)
+    rec = KaldiRecognizer(current_model, sample_rate)
     rec.SetWords(show_words)
     rec.SetMaxAlternatives(max_alternatives)
     # rec.SetSpkModel(spk_model)
@@ -150,9 +151,8 @@ def send_to_llm(session_id, user_id, result):
 
 
 async def start():
-    # global vi_model
-    # global en_model
-    global model
+    global vi_model
+    global en_model
     global spk_model
     global args
     global pool
@@ -186,7 +186,7 @@ async def start():
     # def thread_init():
     #     GpuInstantiate()
     # pool = concurrent.futures.ThreadPoolExecutor(initializer=thread_init)
-    model = Model(args.en_model_path)
+    en_model = Model(args.en_model_path)
     vi_model = Model(args.vi_model_path)
 
     spk_model = SpkModel(args.spk_model_path)
