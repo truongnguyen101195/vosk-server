@@ -41,8 +41,12 @@ def detect_language(audio_data):
     confidence_vi = result_vi.get('confidence', 0)
 
     if confidence_en > confidence_vi:
+        logging.info("detect_language en")
+
         return 'en'
     else:
+        logging.info("detect_language vi")
+
         return 'vi'
 
 
