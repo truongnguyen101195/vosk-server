@@ -9,6 +9,8 @@ import requests
 import websockets
 import concurrent.futures
 import logging
+
+from langid import langid
 from vosk import Model, SpkModel, KaldiRecognizer
 
 
@@ -22,32 +24,39 @@ def process_chunk(rec, message):
     return result, stop
 
 
+# def detect_language(audio_data):
+#     # Initialize recognizers for both languages
+#     rec_en = KaldiRecognizer(en_model, args.sample_rate)
+#     rec_vi = KaldiRecognizer(vi_model, args.sample_rate)
+#
+#     # Use a short sample for language detection
+#     sample_size = min(8000, len(audio_data))  # Use the first 0.5 seconds (8000 samples at 16000 Hz)
+#     sample_data = audio_data[:sample_size]
+#
+#     rec_en.AcceptWaveform(sample_data)
+#     rec_vi.AcceptWaveform(sample_data)
+#
+#     result_en = json.loads(rec_en.Result())
+#     result_vi = json.loads(rec_vi.Result())
+#
+#     confidence_en = result_en.get('confidence', 0)
+#     confidence_vi = result_vi.get('confidence', 0)
+#
+#     if confidence_en > confidence_vi:
+#         logging.info("detect_language en")
+#
+#         return 'en'
+#     else:
+#         logging.info("detect_language vi")
+#
+#         return 'en'
+
 def detect_language(audio_data):
-    # Initialize recognizers for both languages
-    rec_en = KaldiRecognizer(en_model, args.sample_rate)
-    rec_vi = KaldiRecognizer(vi_model, args.sample_rate)
-
-    # Use a short sample for language detection
-    sample_size = min(8000, len(audio_data))  # Use the first 0.5 seconds (8000 samples at 16000 Hz)
-    sample_data = audio_data[:sample_size]
-
-    rec_en.AcceptWaveform(sample_data)
-    rec_vi.AcceptWaveform(sample_data)
-
-    result_en = json.loads(rec_en.Result())
-    result_vi = json.loads(rec_vi.Result())
-
-    confidence_en = result_en.get('confidence', 0)
-    confidence_vi = result_vi.get('confidence', 0)
-
-    if confidence_en > confidence_vi:
-        logging.info("detect_language en")
-
-        return 'en'
-    else:
-        logging.info("detect_language vi")
-
-        return 'en'
+    # Detect language using langid
+    lid_result = langid.classify(audio_data)
+    detected_lang = lid_result[0]
+    logging.info(f"Detected language: {detected_lang}")
+    return detected_lang
 
 
 async def recognize(websocket, path):
