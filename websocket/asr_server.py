@@ -37,7 +37,10 @@ def detect_language(audio_data):
     result_en = json.loads(rec_en.Result())
     result_vi = json.loads(rec_vi.Result())
 
-    if result_en['confidence'] > result_vi['confidence']:
+    confidence_en = result_en.get('confidence', 0)
+    confidence_vi = result_vi.get('confidence', 0)
+
+    if confidence_en > confidence_vi:
         return 'en'
     else:
         return 'vi'
