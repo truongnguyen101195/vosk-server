@@ -124,7 +124,7 @@ async def recognize(websocket, path):
     rec = KaldiRecognizer(current_model, sample_rate)
     rec.SetWords(show_words)
     rec.SetMaxAlternatives(max_alternatives)
-    rec.SetSpkModel(spk_model)
+    # rec.SetSpkModel(spk_model)
 
     response, stop = await loop.run_in_executor(pool, process_chunk, rec, audio_data)
     await websocket.send(response)
