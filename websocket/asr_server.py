@@ -61,7 +61,8 @@ def detect_language(audio_data):
 
 
 async def recognize(websocket, path):
-    global model
+    global en_model
+    global vi_model
     global spk_model
     global args
     global pool
