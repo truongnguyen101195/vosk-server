@@ -112,7 +112,7 @@ async def recognize(websocket, path):
     rec.SetMaxAlternatives(max_alternatives)
     rec.SetSpkModel(spk_model)
 
-    response, stop = await loop.run_in_executor(pool, process_chunk, rec, message)
+    response, stop = await loop.run_in_executor(pool, process_chunk, rec, audio_data)
     await websocket.send(response)
     if stop:
         send_to_llm(session_id, user_id, response)
