@@ -47,7 +47,7 @@ def detect_language(audio_data):
     else:
         logging.info("detect_language vi")
 
-        return 'vi'
+        return 'en'
 
 
 async def recognize(websocket, path):
