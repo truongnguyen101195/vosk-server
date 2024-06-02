@@ -10,7 +10,7 @@ import websockets
 import concurrent.futures
 import logging
 
-from langid import langid
+import py3langid as langid
 from vosk import Model, SpkModel, KaldiRecognizer
 
 
@@ -54,7 +54,7 @@ def process_chunk(rec, message):
 def detect_language(audio_data):
     # Detect language using langid
     langid.set_languages(['en', 'vi'])
-    lid_result = langid.classify(audio_data)
+    lid_result = langid.classify(audio_data.decode('utf-8', errors='ignore'))
     detected_lang = lid_result[0]
     logging.info(f"Detected language: {detected_lang}")
     return detected_lang
