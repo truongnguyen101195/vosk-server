@@ -175,7 +175,7 @@ async def start():
 
     pool = concurrent.futures.ThreadPoolExecutor((os.cpu_count() or 1))
 
-    async with websockets.serve(recognize, args.interface, args.port):
+    async with websockets.serve(recognize, args.interface, args.port, max_size=None):
         await asyncio.Future()
 
 
