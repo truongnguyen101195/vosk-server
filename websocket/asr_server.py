@@ -53,6 +53,7 @@ def process_chunk(rec, message):
 
 def detect_language(audio_data):
     # Detect language using langid
+    langid.set_languages(['en', 'vi'])
     lid_result = langid.classify(audio_data)
     detected_lang = lid_result[0]
     logging.info(f"Detected language: {detected_lang}")
